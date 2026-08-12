@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sideline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B2B1D;
+    --surface:#123B27;
+    --surface-2:#184A31;
+    --chalk:#F4F1E4;
+    --chalk-dim:#A9C2AE;
+    --gold:#D8A83D;
+    --gold-dim:#8C702A;
+    --alert:#D1523A;
+    --line:#2C4A37;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px);
+    background-size: 100% 64px;
+    color:var(--chalk);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Oswald',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin:0;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:var(--gold);}
+  button{
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    border:none;
+    border-radius:4px;
+  }
+  .btn{
+    background:var(--gold);
+    color:#1A1305;
+    font-weight:600;
+    padding:0.7em 1.4em;
+    font-size:0.95rem;
+    letter-spacing:0.02em;
+    transition:transform .12s ease, background .12s ease;
+  }
+  .btn:hover{background:#E7BA55; transform:translateY(-1px);}
+  .btn:focus-visible, a:focus-visible, input:focus-visible, [tabindex]:focus-visible{
+    outline:2px solid var(--gold);
+    outline-offset:2px;
+  }
+  .btn-ghost{
+    background:transparent;
+    color:var(--chalk);
+    border:1px solid var(--line);
+    padding:0.65em 1.3em;
+    font-size:0.9rem;
+  }
+  .btn-ghost:hover{border-color:var(--gold); color:var(--gold);}
+  .btn-danger{
+    background:transparent;
+    color:var(--alert);
+    border:1px solid var(--alert);
+    padding:0.4em 0.9em;
+    font-size:0.82rem;
+  }
+  .btn-danger:hover{background:var(--alert); color:var(--chalk);}
+
+  /* ---------- PIN GATE ---------- */
+  #pinGate{
+    position:fixed; inset:0; z-index:100;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--bg);
+    padding:24px;
+  }
+  .gate-card{
+    width:100%; max-width:340px;
+    text-align:center;
+  }
+  .gate-card h1{font-size:2.2rem; color:var(--gold); margin-bottom:.2em;}
+  .gate-card p{color:var(--chalk-dim); font-size:.9rem; margin-bottom:1.6em;}
+  #pinInput{
+    width:100%;
+    background:var(--surface);
+    border:1px solid var(--line);
+    color:var(--chalk);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.4rem;
+    letter-spacing:0.5em;
+    text-align:center;
+    padding:0.6em 0 0.6em .5em;
+    border-radius:6px;
+    margin-bottom:0.9em;
+  }
+  #pinInput:focus-visible{outline:2px solid var(--gold);}
+  #pinError{color:var(--alert); font-size:.85rem; min-height:1.4em; margin-bottom:.6em;}
+  .gate-setup{
+    margin-top:2em; text-align:left;
+    border-top:1px dashed var(--line);
+    padding-top:1em;
+  }
+  .gate-setup summary{color:var(--chalk-dim); font-size:.8rem; cursor:pointer;}
+  .gate-setup .box{
+    margin-top:.8em; background:var(--surface); border-radius:6px; padding:.8em;
+  }
+  .gate-setup input{
+    width:100%; background:var(--bg); border:1px solid var(--line); color:var(--chalk);
+    padding:.5em; border-radius:4px; font-family:'IBM Plex Mono',monospace; margin-bottom:.5em;
+  }
+  .gate-setup code{
+    display:block; word-break:break-all; background:var(--bg); padding:.6em;
+    border-radius:4px; font-size:.75rem; color:var(--gold); margin-top:.5em;
+  }
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none;}
+  header.top{
+    padding:28px 20px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+    max-width:920px; margin:0 auto;
+  }
+  header.top .wordmark{font-size:1.5rem; color:var(--gold);}
+  header.top nav{display:flex; gap:18px;}
+  header.top nav a{
+    color:var(--chalk-dim); text-decoration:none; font-size:.85rem;
+    text-transform:uppercase; letter-spacing:.08em; font-weight:600;
+  }
+  header.top nav a:hover{color:var(--gold);}
+
+  main{max-width:920px; margin:0 auto; padding:0 20px 80px;}
+  section{padding:40px 0;}
+
+  .yardline{
+    display:flex; align-items:center; gap:14px;
+    color:var(--gold-dim); margin:0 0 28px;
+    font-family:'IBM Plex Mono',monospace; font-size:.75rem;
+  }
+  .yardline::before, .yardline::after{
+    content:""; flex:1; height:1px; background:var(--line);
+  }
+
+  .section-title{font-size:1.5rem; margin-bottom:6px;}
+  .section-sub{color:var(--chalk-dim); font-size:.9rem; margin-bottom:22px;}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:20px;
+  }
+
+  /* ---------- FILM / EMBED ---------- */
+  .film-frame-wrap{
+    position:relative;
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:#081C12;
+  }
+  .film-frame-wrap iframe{
+    width:100%; height:480px; border:0; display:block;
+  }
+  .film-fallback{
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+    gap:12px; margin-top:14px; color:var(--chalk-dim); font-size:.85rem;
+  }
+
+  /* ---------- CALENDAR ---------- */
+  .cal-layout{display:grid; grid-template-columns:1fr; gap:24px;}
+  @media(min-width:760px){ .cal-layout{grid-template-columns:1.1fr .9fr;} }
+
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .cal-head .cal-month{font-size:1.1rem; color:var(--gold);}
+  .cal-nav{display:flex; gap:6px;}
+  .cal-nav button{
+    background:var(--surface-2); color:var(--chalk); width:32px; height:32px;
+    border-radius:6px; font-size:1rem;
+  }
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+  .cal-dow{text-align:center; font-size:.68rem; color:var(--chalk-dim); padding-bottom:6px; text-transform:uppercase;}
+  .cal-day{
+    aspect-ratio:1; border-radius:6px; background:var(--bg);
+    border:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-size:.8rem; color:var(--chalk-dim);
+    cursor:pointer; position:relative;
+  }
+  .cal-day:hover{border-color:var(--gold);}
+  .cal-day.empty{visibility:hidden; cursor:default;}
+  .cal-day.today{border-color:var(--gold); color:var(--gold);}
+  .cal-day .dot{
+    width:5px; height:5px; border-radius:50%; background:var(--gold); margin-top:3px;
+  }
+
+  .agenda-list{display:flex; flex-direction:column; gap:10px; max-height:420px; overflow-y:auto;}
+  .agenda-item{
+    display:flex; gap:12px; align-items:center;
+    background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 12px;
+    cursor:pointer;
+  }
+  .agenda-item:hover{border-color:var(--gold);}
+  .agenda-date{
+    font-family:'IBM Plex Mono',monospace; font-size:.75rem; color:var(--gold);
+    min-width:54px; text-align:center; line-height:1.2;
+  }
+  .agenda-date .d{font-size:1.1rem; display:block;}
+  .agenda-main{flex:1; min-width:0;}
+  .agenda-main .opp{font-weight:600; font-size:.92rem;}
+  .agenda-main .meta{color:var(--chalk-dim); font-size:.78rem;}
+  .agenda-empty{color:var(--chalk-dim); font-size:.85rem; padding:14px 0;}
+
+  /* ---------- EVENT MODAL ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(6,17,11,.7); z-index:50;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    width:100%; max-width:400px; padding:22px;
+  }
+  .modal h3{margin-bottom:16px; color:var(--gold);}
+  .field{margin-bottom:12px;}
+  .field label{display:block; font-size:.75rem; color:var(--chalk-dim); text-transform:uppercase; letter-spacing:.05em; margin-bottom:4px;}
+  .field input, .field select, .field textarea{
+    width:100%; background:var(--bg); border:1px solid var(--line); color:var(--chalk);
+    padding:.6em; border-radius:6px; font-family:'Inter',sans-serif; font-size:.9rem;
+  }
+  .field textarea{resize:vertical; min-height:60px;}
+  .modal-actions{display:flex; justify-content:space-between; align-items:center; margin-top:18px;}
+
+  /* ---------- PHOTOS / OCR ---------- */
+  .dropzone{
+    border:2px dashed var(--line); border-radius:10px; padding:40px 20px;
+    text-align:center; color:var(--chalk-dim); transition:border-color .15s, background .15s;
+  }
+  .dropzone.drag{border-color:var(--gold); background:var(--surface-2);}
+  .dropzone strong{color:var(--chalk); display:block; margin-bottom:6px;}
+  .dropzone input{display:none;}
+
+  .ocr-status{margin-top:16px; font-size:.85rem; color:var(--chalk-dim); display:none;}
+  .ocr-status.show{display:block;}
+  .ocr-bar{height:4px; background:var(--line); border-radius:2px; overflow:hidden; margin-top:8px;}
+  .ocr-bar-fill{height:100%; width:0%; background:var(--gold); transition:width .2s;}
+
+  .review-panel{margin-top:20px; display:none;}
+  .review-panel.show{display:block;}
+  .review-row{
+    display:grid; grid-template-columns:1fr 1fr 1.4fr auto; gap:8px; align-items:center;
+    background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; margin-bottom:8px;
+  }
+  .review-row input{
+    background:var(--surface); border:1px solid var(--line); color:var(--chalk);
+    padding:.4em .5em; border-radius:4px; font-size:.82rem;
+  }
+  .raw-ocr{
+    margin-top:14px; font-size:.75rem; color:var(--chalk-dim);
+  }
+  .raw-ocr summary{cursor:pointer;}
+  .raw-ocr pre{
+    white-space:pre-wrap; background:var(--bg); padding:10px; border-radius:6px; margin-top:8px;
+    font-family:'IBM Plex Mono',monospace; max-height:160px; overflow-y:auto;
+  }
+
+  .gallery-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; margin-top:18px;
+  }
+  .gallery-item{
+    position:relative; border-radius:8px; overflow:hidden; border:1px solid var(--line);
+    aspect-ratio:3/4; background:var(--bg);
+  }
+  .gallery-item img{width:100%; height:100%; object-fit:cover; display:block;}
+  .gallery-item .del{
+    position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%;
+    background:rgba(6,17,11,.75); color:var(--chalk); font-size:.85rem; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .gallery-item .del:hover{background:var(--alert);}
+  .gallery-empty{color:var(--chalk-dim); font-size:.85rem;}
+
+  footer{
+    text-align:center; color:var(--chalk-dim); font-size:.75rem; padding:30px 20px 50px;
+  }
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(10px);
+    background:var(--surface-2); border:1px solid var(--gold-dim); color:var(--chalk);
+    padding:10px 18px; border-radius:8px; font-size:.85rem; opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:200;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== PIN GATE ===================== -->
+<div id="pinGate">
+  <div class="gate-card">
+    <h1>Sideline</h1>
+    <p>Enter your PIN to get in.</p>
+    <input id="pinInput" class="mono" type="password" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="••••">
+    <div id="pinError"></div>
+    <button class="btn" id="pinSubmit" style="width:100%;">Unlock</button>
+
+    <details class="gate-setup">
+      <summary>First time setting this up?</summary>
+      <div class="box">
+        <p style="font-size:.78rem; color:var(--chalk-dim); margin:0 0 8px;">
+          Type the PIN you want, then paste the generated hash into <code>PIN_HASH</code> near the top of the &lt;script&gt; in index.html, then redeploy. This is a light deterrent, not real security — anyone with the source can bypass it. See README for details.
+        </p>
+        <input id="setupPin" type="text" placeholder="Choose a PIN">
+        <button class="btn-ghost" id="setupGenerate" type="button">Generate hash</button>
+        <code id="setupHashOut" style="display:none;"></code>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app">
+  <header class="top">
+    <div class="wordmark display">Sideline</div>
+    <nav>
+      <a href="#film">Film</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#photos">Photos</a>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- FILM / EMBED -->
+    <section id="film">
+      <div class="yardline">10</div>
+      <h2 class="section-title">Film</h2>
+      <p class="section-sub">Hudl team page, pulled in below.</p>
+      <div class="film-frame-wrap">
+        <iframe id="hudlFrame" src="https://app.hudl.com/watch/team/17063/analyze" title="Hudl team page" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="film-fallback">
+        <span>Hudl requires a login and most likely blocks being shown inside another page like this — if the box above stayed blank, that's why.</span>
+        <a class="btn-ghost" href="https://app.hudl.com/watch/team/17063/analyze" target="_blank" rel="noopener">Open Hudl in a new tab ↗</a>
+      </div>
+    </section>
+
+    <!-- SCHEDULE -->
+    <section id="schedule">
+      <div class="yardline">20</div>
+      <h2 class="section-title">Schedule</h2>
+      <p class="section-sub">Tap a day to add a game or practice. Tap an entry to edit it.</p>
+
+      <div class="cal-layout">
+        <div class="card">
+          <div class="cal-head">
+            <div class="cal-month display" id="calMonthLabel"></div>
+            <div class="cal-nav">
+              <button id="calPrev" aria-label="Previous month">‹</button>
+              <button id="calNext" aria-label="Next month">›</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="calDow"></div>
+          <div class="cal-grid" id="calGrid" style="margin-top:4px;"></div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="font-size:1rem;">Upcoming</h3>
+            <button class="btn-ghost" id="addEventBtn">+ Add</button>
+          </div>
+          <div class="agenda-list" id="agendaList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PHOTOS / OCR INTAKE -->
+    <section id="photos">
+      <div class="yardline">30</div>
+      <h2 class="section-title">Add a Schedule Photo</h2>
+      <p class="section-sub">Drop in a photo of a printed or posted schedule. It'll try to read the dates, times, and opponents so you can add them straight to the calendar — the photo itself is always saved either way.</p>
+
+      <div class="card">
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept="image/*" multiple>
+          <strong>Drag a schedule photo here</strong>
+          or tap to choose a file
+        </div>
+
+        <div class="ocr-status" id="ocrStatus">
+          <span id="ocrStatusText">Reading image…</span>
+          <div class="ocr-bar"><div class="ocr-bar-fill" id="ocrBarFill"></div></div>
+        </div>
+
+        <div class="review-panel" id="reviewPanel">
+          <h3 style="font-size:.95rem; margin-bottom:10px;">Found these — check them over, then add what looks right</h3>
+          <div id="reviewRows"></div>
+          <button class="btn" id="addAllBtn" style="margin-top:4px;">Add checked rows to schedule</button>
+
+          <details class="raw-ocr">
+            <summary>Show raw text it read</summary>
+            <pre id="rawOcrText"></pre>
+          </details>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <h3 style="font-size:1rem; margin-bottom:4px;">Saved photos</h3>
+        <p class="gallery-empty" id="galleryEmptyMsg">No photos saved yet.</p>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>Just for you — nobody else has this URL. Built with Firebase + Tesseract.js.</footer>
+</div>
+
+<!-- ===================== EVENT MODAL ===================== -->
+<div class="modal-backdrop" id="eventModalBackdrop">
+  <div class="modal">
+    <h3 id="modalTitle">Add to schedule</h3>
+    <form id="eventForm">
+      <div class="field">
+        <label for="evDate">Date</label>
+        <input type="date" id="evDate" required>
+      </div>
+      <div class="field">
+        <label for="evTime">Time (optional)</label>
+        <input type="time" id="evTime">
+      </div>
+      <div class="field">
+        <label for="evOpponent">Opponent / Title</label>
+        <input type="text" id="evOpponent" placeholder="vs. Lincoln High" required>
+      </div>
+      <div class="field">
+        <label for="evType">Type</label>
+        <select id="evType">
+          <option value="game">Game</option>
+          <option value="practice">Practice</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="evLocation">Location</label>
+        <input type="text" id="evLocation" placeholder="Home / Away / address">
+      </div>
+      <div class="field">
+        <label for="evNotes">Notes</label>
+        <textarea id="evNotes"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-danger" id="deleteEventBtn" style="display:none;">Delete</button>
+        <div style="display:flex; gap:8px; margin-left:auto;">
+          <button type="button" class="btn-ghost" id="cancelEventBtn">Cancel</button>
+          <button type="submit" class="btn">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, doc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+/* =======================================================================
+   1) CONFIG — fill these in before deploying. See README.md.
+   ======================================================================= */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// SHA-256 hex hash of your PIN. Use the "First time setting this up?"
+// panel on the lock screen to generate this, then paste it here.
+const PIN_HASH = "REPLACE_ME";
+
+/* ======================================================================= */
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let uid = null;
+onAuthStateChanged(auth, (user) => {
+  if (user) { uid = user.uid; startListeners(); }
+});
+signInAnonymously(auth).catch((e) => {
+  console.error("Anonymous sign-in failed", e);
+  showToast("Couldn't connect to Firebase — check firebaseConfig in the source.");
+});
+
+/* ---------------- helpers ---------------- */
+async function sha256Hex(text){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>t.classList.remove("show"), 2600);
+}
+// Firestore documents cap out at ~1MB, so photos are resized/compressed
+// client-side into a data URL before being stored as a plain field.
+// No Firebase Storage involved — keeps this on Firebase's free plan.
+async function compressImageToDataUrl(file, maxDim = 1100, startQuality = 0.72){
+  const bitmap = await createImageBitmap(file);
+  let { width, height } = bitmap;
+  if (width > maxDim || height > maxDim){
+    const scale = maxDim / Math.max(width, height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width; canvas.height = height;
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, width, height);
+
+  let quality = startQuality;
+  let dataUrl = canvas.toDataURL("image/jpeg", quality);
+  // Firestore field limit is generous, but keep well under 1MB total doc size.
+  const MAX_BYTES = 700000;
+  while (dataUrl.length * 0.75 > MAX_BYTES && quality > 0.3){
+    quality -= 0.12;
+    dataUrl = canvas.toDataURL("image/jpeg", quality);
+  }
+  if (dataUrl.length * 0.75 > MAX_BYTES){
+    return null; // still too big even at low quality / after resizing
+  }
+  return dataUrl;
+}
+
+function fmtDateShort(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  const dt = new Date(y, m-1, d);
+  return {
+    d: dt.toLocaleDateString(undefined,{day:"numeric"}),
+    m: dt.toLocaleDateString(undefined,{month:"short"}).toUpperCase()
+  };
+}
+
+/* ---------------- PIN GATE ---------------- */
+const pinGate = document.getElementById("pinGate");
+const pinInput = document.getElementById("pinInput");
+const pinError = document.getElementById("pinError");
+const appEl = document.getElementById("app");
+
+document.getElementById("pinSubmit").addEventListener("click", tryUnlock);
+pinInput.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+
+async function tryUnlock(){
+  if (PIN_HASH === "REPLACE_ME"){
+    pinError.textContent = "No PIN set up yet — use the panel below to generate one first.";
+    return;
+  }
+  const hash = await sha256Hex(pinInput.value.trim());
+  if (hash === PIN_HASH){
+    pinGate.style.display = "none";
+    appEl.style.display = "block";
+    sessionStorage.setItem("sideline-unlocked", "1");
+  } else {
+    pinError.textContent = "Wrong PIN.";
+    pinInput.value = "";
+  }
+}
+if (sessionStorage.getItem("sideline-unlocked") === "1"){
+  pinGate.style.display = "none";
+  appEl.style.display = "block";
+}
+
+document.getElementById("setupGenerate").addEventListener("click", async () => {
+  const val = document.getElementById("setupPin").value.trim();
+  if (!val) return;
+  const hash = await sha256Hex(val);
+  const out = document.getElementById("setupHashOut");
+  out.style.display = "block";
+  out.textContent = hash;
+});
+
+/* ---------------- CALENDAR + SCHEDULE ---------------- */
+let events = []; // {id, date, time, opponent, type, location, notes}
+let calYear, calMonth; // calMonth 0-11
+const today = new Date();
+calYear = today.getFullYear();
+calMonth = today.getMonth();
+
+function startListeners(){
+  const evQ = query(collection(db, "events"), orderBy("date"));
+  onSnapshot(evQ, (snap) => {
+    events = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderCalendar();
+    renderAgenda();
+  });
+
+  const imQ = query(collection(db, "images"), orderBy("uploadedAt", "desc"));
+  onSnapshot(imQ, (snap) => {
+    renderGallery(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  });
+}
+
+const DOW = ["S","M","T","W","T","F","S"];
+document.getElementById("calDow").innerHTML = DOW.map(d=>`<div class="cal-dow">${d}</div>`).join("");
+
+function renderCalendar(){
+  const label = new Date(calYear, calMonth, 1).toLocaleDateString(undefined,{month:"long", year:"numeric"});
+  document.getElementById("calMonthLabel").textContent = label;
+
+  const firstDow = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const grid = document.getElementById("calGrid");
+  grid.innerHTML = "";
+
+  for (let i=0; i<firstDow; i++){
+    grid.insertAdjacentHTML("beforeend", `<div class="cal-day empty"></div>`);
+  }
+  for (let day=1; day<=daysInMonth; day++){
+    const iso = `${calYear}-${String(calMonth+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+    const isToday = iso === today.toISOString().slice(0,10);
+    const hasEvent = events.some(e => e.date === iso);
+    grid.insertAdjacentHTML("beforeend", `
+      <div class="cal-day ${isToday?"today":""}" data-date="${iso}" tabindex="0">
+        ${day}${hasEvent ? '<div class="dot"></div>' : ""}
+      </div>
+    `);
+  }
+
+  grid.querySelectorAll(".cal-day:not(.empty)").forEach(cell => {
+    cell.addEventListener("click", () => {
+      const iso = cell.dataset.date;
+      const existing = events.find(e => e.date === iso);
+      openEventModal(existing || { date: iso });
+    });
+  });
+}
+
+document.getElementById("calPrev").addEventListener("click", () => {
+  calMonth--; if (calMonth<0){calMonth=11; calYear--;}
+  renderCalendar();
+});
+document.getElementById("calNext").addEventListener("click", () => {
+  calMonth++; if (calMonth>11){calMonth=0; calYear++;}
+  renderCalendar();
+});
+
+function renderAgenda(){
+  const list = document.getElementById("agendaList");
+  const todayIso = today.toISOString().slice(0,10);
+  const upcoming = events.filter(e => e.date >= todayIso).sort((a,b)=>a.date.localeCompare(b.date));
+  if (!upcoming.length){
+    list.innerHTML = `<div class="agenda-empty">Nothing on the schedule yet. Add a game, or drop in a schedule photo below.</div>`;
+    return;
+  }
+  list.innerHTML = upcoming.map(e => {
+    const {d,m} = fmtDateShort(e.date);
+    return `
+      <div class="agenda-item" data-id="${e.id}">
+        <div class="agenda-date">${m}<span class="d">${d}</span></div>
+        <div class="agenda-main">
+          <div class="opp">${escapeHtml(e.opponent || "Untitled")}</div>
+          <div class="meta">${e.type ? e.type[0].toUpperCase()+e.type.slice(1) : ""}${e.time ? " · "+e.time : ""}${e.location ? " · "+escapeHtml(e.location) : ""}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+  list.querySelectorAll(".agenda-item").forEach(row => {
+    row.addEventListener("click", () => {
+      const ev = events.find(e => e.id === row.dataset.id);
+      if (ev) openEventModal(ev);
+    });
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* ---------------- EVENT MODAL ---------------- */
+const modalBackdrop = document.getElementById("eventModalBackdrop");
+const eventForm = document.getElementById("eventForm");
+let editingId = null;
+
+function openEventModal(ev){
+  editingId = ev.id || null;
+  document.getElementById("modalTitle").textContent = editingId ? "Edit entry" : "Add to schedule";
+  document.getElementById("evDate").value = ev.date || "";
+  document.getElementById("evTime").value = ev.time || "";
+  document.getElementById("evOpponent").value = ev.opponent || "";
+  document.getElementById("evType").value = ev.type || "game";
+  document.getElementById("evLocation").value = ev.location || "";
+  document.getElementById("evNotes").value = ev.notes || "";
+  document.getElementById("deleteEventBtn").style.display = editingId ? "inline-block" : "none";
+  modalBackdrop.classList.add("open");
+}
+function closeEventModal(){ modalBackdrop.classList.remove("open"); editingId = null; }
+
+document.getElementById("addEventBtn").addEventListener("click", () => openEventModal({date: today.toISOString().slice(0,10)}));
+document.getElementById("cancelEventBtn").addEventListener("click", closeEventModal);
+modalBackdrop.addEventListener("click", (e) => { if (e.target === modalBackdrop) closeEventModal(); });
+
+eventForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = {
+    date: document.getElementById("evDate").value,
+    time: document.getElementById("evTime").value,
+    opponent: document.getElementById("evOpponent").value.trim(),
+    type: document.getElementById("evType").value,
+    location: document.getElementById("evLocation").value.trim(),
+    notes: document.getElementById("evNotes").value.trim(),
+  };
+  try{
+    if (editingId){
+      await updateDoc(doc(db, "events", editingId), data);
+      showToast("Updated.");
+    } else {
+      await addDoc(collection(db, "events"), { ...data, createdAt: serverTimestamp() });
+      showToast("Added to schedule.");
+    }
+    closeEventModal();
+  } catch(err){
+    console.error(err);
+    showToast("Couldn't save — check your Firestore rules/config.");
+  }
+});
+
+document.getElementById("deleteEventBtn").addEventListener("click", async () => {
+  if (!editingId) return;
+  if (!confirm("Delete this entry?")) return;
+  await deleteDoc(doc(db, "events", editingId));
+  showToast("Deleted.");
+  closeEventModal();
+});
+
+/* ---------------- PHOTO INTAKE + OCR ---------------- */
+const dropzone = document.getElementById("dropzone");
+const fileInput = document.getElementById("fileInput");
+const ocrStatus = document.getElementById("ocrStatus");
+const ocrStatusText = document.getElementById("ocrStatusText");
+const ocrBarFill = document.getElementById("ocrBarFill");
+const reviewPanel = document.getElementById("reviewPanel");
+const reviewRows = document.getElementById("reviewRows");
+const rawOcrText = document.getElementById("rawOcrText");
+
+dropzone.addEventListener("click", () => fileInput.click());
+["dragenter","dragover"].forEach(evt => dropzone.addEventListener(evt, (e) => {
+  e.preventDefault(); dropzone.classList.add("drag");
+}));
+["dragleave","drop"].forEach(evt => dropzone.addEventListener(evt, (e) => {
+  e.preventDefault(); dropzone.classList.remove("drag");
+}));
+dropzone.addEventListener("drop", (e) => handleFiles(e.dataTransfer.files));
+fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
+
+async function handleFiles(fileList){
+  const files = Array.from(fileList).filter(f => f.type.startsWith("image/"));
+  for (const file of files){
+    await processFile(file);
+  }
+  fileInput.value = "";
+}
+
+async function processFile(file){
+  // Always save the photo first, regardless of what OCR does.
+  try{
+    const dataUrl = await compressImageToDataUrl(file);
+    if (!dataUrl){
+      showToast("That photo's too large/detailed to save even after compressing — try a tighter crop or a lower-res photo.");
+      return;
+    }
+    await addDoc(collection(db, "images"), {
+      dataUrl, uploadedAt: serverTimestamp()
+    });
+    showToast("Photo saved.");
+  } catch(err){
+    console.error(err);
+    showToast("Couldn't save photo — check firebaseConfig and Firestore rules.");
+    return;
+  }
+
+  // Then try OCR on it, best-effort.
+  ocrStatus.classList.add("show");
+  ocrStatusText.textContent = "Reading image…";
+  ocrBarFill.style.width = "0%";
+  try{
+    const result = await Tesseract.recognize(file, "eng", {
+      logger: m => {
+        if (m.status === "recognizing text"){
+          ocrBarFill.style.width = Math.round(m.progress*100) + "%";
+        }
+      }
+    });
+    const text = result.data.text || "";
+    rawOcrText.textContent = text.trim() || "(no text found)";
+    const candidates = parseScheduleText(text);
+    showReviewRows(candidates);
+  } catch(err){
+    console.error(err);
+    showToast("Couldn't read text from that photo — it's still saved in your gallery.");
+  } finally {
+    ocrStatus.classList.remove("show");
+  }
+}
+
+// Best-effort line parser: looks for a date and optional time on each line,
+// treats the rest of the line as the opponent/title. Not perfect —
+// that's why every row shows up editable before it's added.
+function parseScheduleText(text){
+  const MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec";
+  const dateRe = new RegExp(`\\b(\\d{1,2})\\/(\\d{1,2})(?:\\/(\\d{2,4}))?\\b|\\b(${MONTHS})[a-z]*\\.?\\s+(\\d{1,2})\\b`, "i");
+  const timeRe = /\b(\d{1,2}):(\d{2})\s?(am|pm)?\b/i;
+  const monthIndex = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,sept:8,oct:9,nov:10,dec:11};
+
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  const results = [];
+  const nowYear = new Date().getFullYear();
+
+  for (const line of lines){
+    const dm = line.match(dateRe);
+    if (!dm) continue;
+
+    let iso = null;
+    if (dm[1] && dm[2]){
+      let yr = dm[3] ? (dm[3].length===2 ? 2000+parseInt(dm[3]) : parseInt(dm[3])) : nowYear;
+      iso = `${yr}-${String(dm[1]).padStart(2,"0")}-${String(dm[2]).padStart(2,"0")}`;
+    } else if (dm[4] && dm[5]){
+      const mi = monthIndex[dm[4].toLowerCase()];
+      if (mi !== undefined){
+        iso = `${nowYear}-${String(mi+1).padStart(2,"0")}-${String(dm[5]).padStart(2,"0")}`;
+      }
+    }
+    if (!iso) continue;
+
+    const tm = line.match(timeRe);
+    let time = "";
+    if (tm){
+      let hh = parseInt(tm[1]); const mm = tm[2];
+      if (tm[3] && tm[3].toLowerCase()==="pm" && hh<12) hh += 12;
+      if (tm[3] && tm[3].toLowerCase()==="am" && hh===12) hh = 0;
+      time = `${String(hh).padStart(2,"0")}:${mm}`;
+    }
+
+    let rest = line.replace(dateRe, "").replace(timeRe, "").replace(/[-–:|]+/g," ").trim();
+    results.push({ date: iso, time, opponent: rest || "Untitled" });
+  }
+  return results;
+}
+
+function showReviewRows(candidates){
+  reviewPanel.classList.add("show");
+  if (!candidates.length){
+    reviewRows.innerHTML = `<p style="color:var(--chalk-dim); font-size:.85rem;">Didn't find anything that looked like a date. Check the raw text below, or add entries manually in the schedule above.</p>`;
+    return;
+  }
+  reviewRows.innerHTML = candidates.map((c, i) => `
+    <div class="review-row" data-i="${i}">
+      <input type="checkbox" checked style="width:auto;">
+      <input type="date" class="rv-date" value="${c.date}">
+      <input type="text" class="rv-opp" value="${escapeHtml(c.opponent)}" placeholder="Opponent">
+      <input type="time" class="rv-time" value="${c.time || ""}">
+    </div>
+  `).join("");
+}
+
+document.getElementById("addAllBtn").addEventListener("click", async () => {
+  const rows = reviewRows.querySelectorAll(".review-row");
+  let added = 0;
+  for (const row of rows){
+    const checked = row.querySelector('input[type="checkbox"]').checked;
+    if (!checked) continue;
+    const date = row.querySelector(".rv-date").value;
+    const opponent = row.querySelector(".rv-opp").value.trim();
+    const time = row.querySelector(".rv-time").value;
+    if (!date || !opponent) continue;
+    await addDoc(collection(db, "events"), {
+      date, time, opponent, type: "game", location: "", notes: "", source: "ocr", createdAt: serverTimestamp()
+    });
+    added++;
+  }
+  showToast(added ? `Added ${added} to the schedule.` : "Nothing checked to add.");
+  reviewPanel.classList.remove("show");
+});
+
+/* ---------------- GALLERY ---------------- */
+function renderGallery(images){
+  const grid = document.getElementById("galleryGrid");
+  const emptyMsg = document.getElementById("galleryEmptyMsg");
+  if (!images.length){
+    grid.innerHTML = "";
+    emptyMsg.style.display = "block";
+    return;
+  }
+  emptyMsg.style.display = "none";
+  grid.innerHTML = images.map(img => `
+    <div class="gallery-item" data-id="${img.id}">
+      <img src="${img.dataUrl}" alt="Saved schedule photo" loading="lazy">
+      <div class="del" title="Delete photo">✕</div>
+    </div>
+  `).join("");
+  grid.querySelectorAll(".del").forEach(btn => {
+    btn.addEventListener("click", async (e) => {
+      const item = e.target.closest(".gallery-item");
+      if (!confirm("Delete this photo?")) return;
+      await deleteDoc(doc(db, "images", item.dataset.id));
+      showToast("Photo deleted.");
+    });
+  });
+}
+</script>
+</body>
+</html>
