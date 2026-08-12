@@ -18,16 +18,23 @@ header from here, but it's very likely blocked. The page is built to try
 the embed anyway and show an "Open Hudl in a new tab" link right below it
 either way, so you're never stuck with a blank box.
 
-## 2. Set up Firebase (new project)
+## 2. Set up Firebase (new project — stays on the free Spark plan)
+
+Everything here runs on Firebase's free **Spark** plan — no credit card, no
+Blaze upgrade. That's why photos are **not** stored in Firebase Storage
+(Storage requires upgrading to the paid Blaze plan just to turn it on,
+even though light usage would stay within the free quota). Instead,
+schedule photos are compressed in the browser and saved as regular
+Firestore documents — same free database as the calendar events.
 
 1. Go to [console.firebase.google.com](https://console.firebase.google.com) → **Add project** → name it whatever you want (e.g. "sideline").
 2. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable.** (This lets the app connect without you having to log in — it's just there to keep the database from being wide open to strangers.)
 3. **Build → Firestore Database → Create database** → start in **production mode** → pick a region.
-4. **Build → Storage → Get started** → production mode, same region.
-5. In Project settings (gear icon) → **Your apps** → **Add app → Web** → register it → copy the `firebaseConfig` object it gives you.
-6. Paste that object into `firebaseConfig` near the top of the `<script type="module">` block in `index.html`.
-7. In Firestore → **Rules** tab, paste in the contents of `firestore.rules` here, then **Publish**.
-8. In Storage → **Rules** tab, paste in the contents of `storage.rules` here, then **Publish**.
+4. In Project settings (gear icon) → **Your apps** → **Add app → Web** → register it → copy the `firebaseConfig` object it gives you.
+5. Paste that object into `firebaseConfig` near the top of the `<script type="module">` block in `index.html`.
+6. In Firestore → **Rules** tab, paste in the contents of `firestore.rules` here, then **Publish**.
+
+That's it — no Storage bucket, no billing setup needed anywhere in this project.
 
 ## 3. Set your PIN
 
@@ -56,11 +63,13 @@ path is doing real work alongside the PIN here.
 
 ## 5. How the photo → calendar OCR works
 
-- Every dropped photo is uploaded and saved to your gallery **first**, no
+- Every dropped photo is resized/compressed in the browser (so it fits
+  Firestore's ~1MB document limit) and saved to your gallery **first**, no
   matter what happens next — so you never lose a photo even if OCR fails.
-- It then runs Tesseract.js (an OCR library, entirely in your browser — no
-  photo ever leaves Firebase/your device except to Firestore/Storage) and
-  looks for date/time patterns line by line.
+  If a photo is too large/detailed to compress down far enough, you'll get
+  a message asking you to crop it tighter or use a lower-res photo instead.
+- It then runs Tesseract.js (an OCR library, entirely in your browser) on
+  the original photo and looks for date/time patterns line by line.
 - Whatever it finds shows up as editable rows — check them over, fix
   anything wrong, uncheck anything bogus, then add them to the schedule.
 - Handwritten schedules, tables with weird spacing, or low-quality photos
