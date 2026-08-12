@@ -159,21 +159,28 @@
     padding:20px;
   }
 
-  /* ---------- FILM / EMBED ---------- */
-  .film-frame-wrap{
-    position:relative;
-    border-radius:10px;
-    overflow:hidden;
+  /* ---------- FILM / LAUNCH CARD ---------- */
+  .film-launch{
+    display:flex; align-items:center; gap:16px;
+    background:var(--surface);
     border:1px solid var(--line);
-    background:#081C12;
+    border-radius:10px;
+    padding:22px;
+    text-decoration:none;
+    color:var(--chalk);
+    transition:border-color .15s, background .15s;
   }
-  .film-frame-wrap iframe{
-    width:100%; height:480px; border:0; display:block;
+  .film-launch:hover{border-color:var(--gold); background:var(--surface-2);}
+  .film-launch-icon{
+    width:46px; height:46px; border-radius:50%;
+    background:var(--gold); color:#1A1305;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem; flex-shrink:0;
   }
-  .film-fallback{
-    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
-    gap:12px; margin-top:14px; color:var(--chalk-dim); font-size:.85rem;
-  }
+  .film-launch-text{display:flex; flex-direction:column; gap:2px; flex:1;}
+  .film-launch-text strong{font-size:1.05rem;}
+  .film-launch-text span{font-size:.82rem; color:var(--chalk-dim); font-family:'IBM Plex Mono',monospace;}
+  .film-launch-arrow{font-size:1.3rem; color:var(--gold);}
 
   /* ---------- CALENDAR ---------- */
   .cal-layout{display:grid; grid-template-columns:1fr; gap:24px;}
@@ -347,14 +354,15 @@
     <section id="film">
       <div class="yardline">10</div>
       <h2 class="section-title">Film</h2>
-      <p class="section-sub">Hudl team page, pulled in below.</p>
-      <div class="film-frame-wrap">
-        <iframe id="hudlFrame" src="https://app.hudl.com/watch/team/17063/analyze" title="Hudl team page" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-      </div>
-      <div class="film-fallback">
-        <span>Hudl requires a login and most likely blocks being shown inside another page like this — if the box above stayed blank, that's why.</span>
-        <a class="btn-ghost" href="https://app.hudl.com/watch/team/17063/analyze" target="_blank" rel="noopener">Open Hudl in a new tab ↗</a>
-      </div>
+      <p class="section-sub">Hudl blocks other sites from embedding it, so this just jumps you straight there.</p>
+      <a class="film-launch" href="https://app.hudl.com/watch/team/17063/analyze" target="_blank" rel="noopener">
+        <div class="film-launch-icon">▶</div>
+        <div class="film-launch-text">
+          <strong>Open team film on Hudl</strong>
+          <span>app.hudl.com — opens in a new tab</span>
+        </div>
+        <div class="film-launch-arrow">↗</div>
+      </a>
     </section>
 
     <!-- SCHEDULE -->
